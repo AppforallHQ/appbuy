@@ -4,10 +4,12 @@ import plistlib
 import logging
 import requests
 
+"""
 logging.basicConfig(
     level=logging.INFO,
     format="[%(asctime)s][%(levelname)s:%(name)s] %(message)s"
 )
+"""
 
 logger = logging.getLogger(__name__)
 
@@ -32,10 +34,11 @@ class AppStore:
     
     USER_AGENT = "AppStore/2.0 iOS/7.0.4 model/iPad3,1 (4; dt:77)"
     
-    def __init__(self, username, password, guid):
+    def __init__(self, username, password, guid, action_signature=None):
         self.username = username
         self.password = password
         self.guid = guid
+        self.action_signature = action_signature
         self.is_authenticated = False
         self.session = requests.Session()
         
@@ -60,7 +63,7 @@ class AppStore:
         headers = {
             'Content-Type': 'application/x-apple-plist',
             'X-Apple-Store-Front': '143441-1,20 t:native',
-            'X-Apple-ActionSignature': 'AnR+qWQeZ3vV/aIHylVv72geo4EYv6qg7x0BjsgDoEx4AAABUAMAAABNAAAAgMHqueVTvZxkPWQFHkIjrqWjaa3O7WQu801qTPdVkEKVOHLjxjTsdN2AwHHZrNsLyQbTaFlavcIv7ckemPnvfxWLiTCStjGkX9c3NVu7OTqOOkstO8PlJRoCwvGiK9CSwXnvvSdhXIigUs5As78hMFJVnnLR9F3nzrWf2mkYSkiSAAAAFrbQkVPKSpw8MhsuHR+PJNKPMJ44uysAAACfAa7U6dP7JW5Vll503fmTN510kt6aAAAAhgYHdrX4PFhadncRCAeyN40pkFUENk7jn8DJMMMaqzo/P9fDT9RDWZTxPKJ8IQyX+kfn6eOD3hK84hqt2BRi5pmUVWSynTUcr/rkVRaVKGlpEY8Ys6quENczIBroOaLdxP57niyY8zONU1GBG+67Er0PqEbL2P4qziEhmHnc+zDxsuGmOFQfAAAAAAAAAAAAAA==',
+            'X-Apple-ActionSignature': self.action_signature,
         }
         
         response = self.session.post(AppStore.Locations.AUTHENTICATION_URL, headers=headers,
@@ -146,7 +149,7 @@ class AppStore:
             
         gift_buy_request = gift_validate_request.copy()
         gift_buy_request.update({
-            'message': 'This gift is automatically sent to you by PROJECT.',
+            'message': 'This app is automatically sent to you by PROJECT.',
             'fcAdamId': 586798532,
         })
         
@@ -166,5 +169,6 @@ class AppStore:
         
 if __name__ == '__main__':
     store = AppStore("user.appbuy@outlook.com", "Asp5Jx6z@", "bb7f7439219f126243b2c4e9efc8edb40438fec6")
+    
     store.authenticate()
     store.gift_app("748048441", "ashkan.roshanayi@gmail.com", dry_run=True)
