@@ -59,3 +59,6 @@ target/
 
 .virtualenv/
 .virtualenv-2.7/
+
+core/local_celeryconfig.py
+core/local_settings.py

@@ -19,7 +19,6 @@ handler = graypy.GELFHandler(settings.LOGSTASH_GELF_HOST, settings.LOGSTASH_GELF
 logger.addHandler(handler)
 
 
-
 class AppBuyTask(Task):
     abstract = True
 
