@@ -4,6 +4,8 @@ import plistlib
 import logging
 import requests
 
+from core.db import appbuy
+
 """
 logging.basicConfig(
     level=logging.INFO,
@@ -41,6 +43,14 @@ class AppStore:
         self.action_signature = action_signature
         self.is_authenticated = False
         self.session = requests.Session()
+
+        proxy = appbuy.proxies.find_one({'enabled': True}, sort=[('order', 1)])
+
+        if proxy and proxy.get('http_proxy'):
+            self.session.proxies = {
+                'http': proxy.get('http_proxy'),
+                'https': proxy.get('https_proxy')
+            }
         
         self.session.headers.update({
             'User-Agent': AppStore.USER_AGENT,

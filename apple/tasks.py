@@ -87,7 +87,6 @@ class AppBuyTask(Task):
                 'token': self.token
             })
 
-
 @app.task(base=AppBuyTask)
 def gift_app(order_id, app_id, user_id, apple_id):
     logger.info('Processing gift request for app={}, user={}. This app will be gifted to PROJECT2={}.'.format(app_id, user_id, apple_id))
@@ -116,4 +115,3 @@ def gift_app(order_id, app_id, user_id, apple_id):
         client.context.clear()
 
         return False
-
