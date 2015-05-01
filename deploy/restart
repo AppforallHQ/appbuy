@@ -1,0 +1,3 @@
+sudo supervisorctl stop appbuy
+sudo supervisorctl start appbuy
+echo "Restarting..."

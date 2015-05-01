@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+if [ -d ".virtualenv" ]; then
+  echo "Virtualenv already exists."
+else
+  echo "Setting up virtualenv..."
+  virtualenv --python=python3 .virtualenv
+fi
+
+source .virtualenv/bin/activate
+
+echo "Installing requirements..."
+pip install -r requirements.txt
