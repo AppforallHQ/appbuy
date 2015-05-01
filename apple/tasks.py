@@ -2,6 +2,7 @@ import uuid
 import requests
 
 from celery import Task
+from raven import Client
 from celery.utils.log import get_task_logger
 
 from core import settings
@@ -12,10 +13,10 @@ from core.db import appbuy, redis
 
 logger = get_task_logger(__name__)
 
-"""client = Client(settings.SENTRY_DSN)
+client = Client(settings.SENTRY_DSN)
 
 handler = graypy.GELFHandler(settings.LOGSTASH_GELF_HOST, settings.LOGSTASH_GELF_PORT)
-logger.addHandler(handler)"""
+logger.addHandler(handler)
 
 
 
@@ -80,8 +81,6 @@ class AppBuyTask(Task):
         return self._token
 
     def update_order_status(self, order_id, state):
-        return
-
         requests.post(settings.CHANGE_STATUS_URL, data={
                 'order_id': order_id,
                 'status': status,
@@ -106,7 +105,7 @@ def gift_app(order_id, app_id, user_id, apple_id):
 
         gift_app.update_order_status(order_id, 5)
 
-        """client.extra_context({
+        client.extra_context({
             'order_id': order_id,
             'app_id': app_id,
             'user_id': user_id,
@@ -114,7 +113,7 @@ def gift_app(order_id, app_id, user_id, apple_id):
         })
 
         client.captureException()
-        client.context.clear()"""
+        client.context.clear()
 
         return False
 
