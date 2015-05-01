@@ -1,4 +1,4 @@
 #!/bin/bash
 export LANG='en_US.UTF-8'
 export LC_ALL='en_US.UTF-8'
-NEW_RELIC_CONFIG_FILE=newrelicx.ini exec ./.virtualenv/bin/newrelic-admin run-program ./.virtualenv/bin/celery worker -A core.celery --loglevel=INFO --concurrency=1 --hostname=appbuy.%h --logfile=/var/log/appbuy/appbuy_%n.log
+NEW_RELIC_CONFIG_FILE=newrelic.ini exec ./.virtualenv/bin/newrelic-admin run-program ./.virtualenv/bin/celery worker -A core.celery --loglevel=INFO --concurrency=1 --hostname=appbuy.%h --logfile=/var/log/appbuy/appbuy_%n.log
