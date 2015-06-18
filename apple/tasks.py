@@ -80,7 +80,7 @@ class AppBuyTask(Task):
         self._update_token()
         return self._token
 
-    def update_order_status(self, order_id, state):
+    def update_order_status(self, order_id, status):
         requests.post(settings.CHANGE_STATUS_URL, data={
                 'order_id': order_id,
                 'status': status,
