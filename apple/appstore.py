@@ -133,7 +133,7 @@ class AppStore:
             'guid': self.guid,
             'toEmail': to_email,
             'senderEmail': self.username,
-            'fromName': 'Ansar',
+            'fromName': 'PROJECT',
             'dateSendType': 'today'
         }
         
