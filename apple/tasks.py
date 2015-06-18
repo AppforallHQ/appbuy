@@ -84,7 +84,8 @@ class AppBuyTask(Task):
         requests.post(settings.CHANGE_STATUS_URL, data={
                 'order_id': order_id,
                 'status': status,
-                'token': self.token
+                'token': self.token,
+                'user': self._user_id
             })
 
 @app.task(base=AppBuyTask)
