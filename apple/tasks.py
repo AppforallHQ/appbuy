@@ -95,7 +95,7 @@ def gift_app(order_id, app_id, user_id, apple_id):
 
     try:
         gift_app.update_order_status(order_id, 4)
-        gift_app.appstore.gift_app(app_id, apple_id, dry_run=True)
+        gift_app.appstore.gift_app(app_id, apple_id, dry_run=False)
         gift_app.update_order_status(order_id, 6)
 
         return True
