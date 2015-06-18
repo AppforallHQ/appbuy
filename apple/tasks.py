@@ -64,7 +64,7 @@ class AppBuyTask(Task):
         if self._check_token():
             return
 
-        token_data = request.post(settings.TOKEN_NEW_URL, data={
+        token_data = requests.post(settings.TOKEN_NEW_URL, data={
                 'username': settings.USERS_USERNAME,
                 'password': settings.USERS_PASSWORD
             }).json()
