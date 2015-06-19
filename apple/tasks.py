@@ -13,12 +13,10 @@ from core.db import appbuy, redis
 
 
 logger = get_task_logger(__name__)
-
 client = Client(settings.SENTRY_DSN)
 
 handler = graypy.GELFHandler(settings.LOGSTASH_GELF_HOST, settings.LOGSTASH_GELF_PORT)
 logger.addHandler(handler)
-
 
 class AppBuyTask(Task):
     abstract = True
@@ -89,13 +87,13 @@ class AppBuyTask(Task):
             })
 
 @app.task(base=AppBuyTask)
-def gift_app(order_id, app_id, user_id, apple_id):
+def gift_app(order_id, app_id, user_id, apple_id, dry_run=False):
     logger.info('Processing gift request for app={}, user={}. This app will be gifted to PROJECT2={}.'.format(app_id, user_id, apple_id))
     logger.info('order_id={}'.format(order_id))
 
     try:
         gift_app.update_order_status(order_id, 4)
-        gift_app.appstore.gift_app(app_id, apple_id, dry_run=False)
+        gift_app.appstore.gift_app(app_id, apple_id, dry_run=dry_run)
         gift_app.update_order_status(order_id, 6)
 
         return True

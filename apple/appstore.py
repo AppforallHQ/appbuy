@@ -174,7 +174,7 @@ class AppStore:
         if response_data['status'] != 0:
             raise Exception("Gift buy error: {}".format(response_data.get('errorMessage', '')))
         
-        logger.info("App '{}' successfully gifted to {}.".format(app_datato_email))
+        logger.info("App '{}' successfully gifted to {}.".format(app_name, to_email))
         
         
 if __name__ == '__main__':
