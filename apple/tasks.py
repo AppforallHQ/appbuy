@@ -39,10 +39,11 @@ class AppBuyTask(Task):
 
     @property
     def appstore(self):
-        if self._appstore is None:
-            account = self.itunes_account
-            self._appstore = appstore.AppStore(account['username'], account['password'], account['guid'], account['apple_action_signature'])
-            self._appstore.authenticate()
+        #if self._appstore is None:
+        account = self.itunes_account
+        
+        self._appstore = appstore.AppStore(account['username'], account['password'], account['guid'], account['apple_action_signature'])
+        self._appstore.authenticate()
 
         return self._appstore
 
@@ -93,7 +94,7 @@ def gift_app(order_id, app_id, user_id, apple_id, dry_run=False):
 
     try:
         gift_app.update_order_status(order_id, 4)
-        gift_app.appstore.gift_app(app_id, apple_id, dry_run=dry_run)
+        gift_app.appstore.gift_app(order_id, app_id, apple_id, dry_run=dry_run)
         gift_app.update_order_status(order_id, 6)
 
         return True

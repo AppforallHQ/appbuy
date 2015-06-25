@@ -1,8 +1,9 @@
 import pdb
 import json
-import plistlib
 import logging
+import datetime
 import requests
+import plistlib
 
 from core.db import appbuy
 
@@ -117,7 +118,7 @@ class AppStore:
         response = self.session.get(itunes_url)
         return json.loads(response.text)
         
-    def gift_app(self, app_id, to_email, dry_run=False):
+    def gift_app(self, order_id, app_id, to_email, dry_run=False):
         app_data = self.get_app_data(app_id)
         
         ##############################################################
@@ -140,6 +141,12 @@ class AppStore:
         response = self.session.post(AppStore.Locations.GIFT_VALIDATE_URL, headers={
                 'Content-Type': 'application/json',
             }, data=json.dumps(gift_validate_request))
+
+        obj_id = appbuy.orders.insert({
+                'order_id': order_id,
+                'validation_data': response.text,
+                'validation_time': datetime.datetime.now(),
+            })
             
         if response.status_code // 100 != 2:
             raise Exception("Gift validation went wrong.")
@@ -167,6 +174,12 @@ class AppStore:
                 'Content-Type': 'application/json',
             }, data=json.dumps(gift_buy_request))
             
+
+        appbuy.orders.update({'_id': obj_id}, {'$set': {
+                'buy_data': response.text,
+                'buy_time': datetime.datetime.now()
+            }})
+
         if response.status_code // 100 != 2:
             raise Exception("Gift buy went wrong.")
             
