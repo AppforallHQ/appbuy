@@ -35,13 +35,13 @@ class AppBuyTask(Task):
             raise Exception("No iTunes account was found.")
 
         return self._itunes_account
-    
+
 
     @property
     def appstore(self):
         #if self._appstore is None:
         account = self.itunes_account
-        
+
         self._appstore = appstore.AppStore(account['username'], account['password'], account['guid'], account['apple_action_signature'])
         self._appstore.authenticate()
 
@@ -78,7 +78,7 @@ class AppBuyTask(Task):
     def token(self):
         self._update_token()
         return self._token
-
+        
     def update_order_status(self, order_id, status):
         requests.post(settings.CHANGE_STATUS_URL, data={
                 'order_id': order_id,
