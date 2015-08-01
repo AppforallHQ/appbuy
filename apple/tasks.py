@@ -88,7 +88,7 @@ class AppBuyTask(Task):
                 'order_id': order_id,
                 'status': status
             }, headers={
-                'Authentication': auth_value
+                'Authorization': auth_value
             })
 
 @app.task(base=AppBuyTask)
