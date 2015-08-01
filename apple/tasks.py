@@ -4,6 +4,7 @@ import requests
 
 from celery import Task
 from raven import Client
+from base64 import b64encode
 from celery.utils.log import get_task_logger
 
 from core import settings
@@ -80,11 +81,14 @@ class AppBuyTask(Task):
         return self._token
         
     def update_order_status(self, order_id, status):
+        token_str = "{}:{}".format(self._user_id, self.token)
+        auth_value = 'Basic '.encode('ascii') + b64encode(token_str.encode('ascii'))
+
         requests.post(settings.CHANGE_STATUS_URL, data={
                 'order_id': order_id,
-                'status': status,
-                'token': self.token,
-                'user': self._user_id
+                'status': status
+            }, headers={
+                'Authentication': auth_value
             })
 
 @app.task(base=AppBuyTask)
