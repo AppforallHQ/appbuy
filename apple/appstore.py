@@ -35,7 +35,8 @@ class AppStore:
         GIFT_BUY_URL = "https://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/giftBuySrv"
         LOOKUP_URL = "https://itunes.apple.com/lookup?id={}"
 
-    USER_AGENT = "AppStore/2.0 iOS/7.0.4 model/iPad3,1 (4; dt:77)"
+#    USER_AGENT = "AppStore/2.0 iOS/7.0.4 model/iPad3,1 (4; dt:77)"
+    USER_AGENT = "iTunes/10.6 (Windows; Microsoft Windows 7 x64 Ultimate Edition Service Pack 1 (Build 7601)) AppleWebKit/534.54.16 (myapp)"
 
     def __init__(self, username, password, guid, action_signature=None):
         self.username = username
@@ -57,27 +58,28 @@ class AppStore:
 
         self.session.headers.update({
             'User-Agent': AppStore.USER_AGENT,
-            'X-Apple-Client-Versions': 'iBooks/3.2; GameCenter/2.0',
-            'X-Apple-Client-Application': 'Software',
-            'X-Apple-Connection-Type': 'WiFi',
-            'X-Apple-Partner': 'origin.0'
+#            'X-Apple-Client-Versions': 'iBooks/3.2; GameCenter/2.0',
+#            'X-Apple-Client-Application': 'Software',
+#            'X-Apple-Connection-Type': 'WiFi',
+#            'X-Apple-Partner': 'origin.0'
         })
 
     def authenticate(self):
         auth_request_data = {
+            'machineName' : 'MYAPP',
             'appleId': self.username,
-            'attempt': '0',
+            'attempt': '1',
             'createSession': 'true',
             'guid': self.guid,
             'password': self.password,
-            'rmp': '0',
-            'why': 'signIn'
+#            'rmp': '0',
+            'why': 'signin'
         }
 
         headers = {
             'Content-Type': 'application/x-apple-plist',
-            'X-Apple-Store-Front': '143441-1,20 t:native',
-            'X-Apple-ActionSignature': self.action_signature,
+            'X-Apple-Store-Front': '143441-1',#,20 t:native',
+#            'X-Apple-ActionSignature': self.action_signature,
         }
 
         response = self.session.post(AppStore.Locations.AUTHENTICATION_URL, headers=headers,
@@ -93,11 +95,14 @@ class AppStore:
 
         auth_result = plistlib.loads(response.text.encode('utf-8'))
         password_token = auth_result['passwordToken']
-        ds_person_id = auth_result['dsPersonId']
+        ds_person_id = auth_result['dsid']
+
 
         self.session.headers.update({
             'X-Token': password_token,
-            'X-Dsid': ds_person_id
+            'X-Dsid': ds_person_id,
+            'X-Apple-Tz' : 28800,
+            'X-Apple-Cuid' : '7c1c1c990bcd9faec5493e21e6fd8d69',
         })
 
         self.is_authenticated = True
