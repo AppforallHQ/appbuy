@@ -5,8 +5,13 @@ import logging
 import datetime
 import requests
 import plistlib
+from bs4 import BeautifulSoup as Soup
+from urllib.parse import urljoin
 
-from core.db import appbuy
+#from core.db import appbuy
+from pymongo import MongoClient
+m = MongoClient()
+appbuy = m['appbuy']
 
 """
 logging.basicConfig(
@@ -14,7 +19,7 @@ logging.basicConfig(
     format="[%(asctime)s][%(levelname)s:%(name)s] %(message)s"
 )
 """
-
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def login_required(func):
@@ -30,6 +35,7 @@ def login_required(func):
 class AppStore:
     class Locations:
         AUTHENTICATION_URL = "https://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/authenticate"
+        AUTHVALIDCHECK_URL = "https://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/giftAccountInfoSrv?guid={}"
         TEST_APP_URL = "https://itunes.apple.com/ae/app/alpha-omega/id748048441?mt=8"
         GET_BAG_URL = "https://init.itunes.apple.com/bag.xml?ix=5&os=7&locale=en_US"
         GIFT_VALIDATE_URL = "https://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/giftValidateSrv"
@@ -111,9 +117,46 @@ class AppStore:
 
         self.is_authenticated = True
 
+        auth_resp = self.session.get(AppStore.Locations.AUTHVALIDCHECK_URL.format(self.guid))
+        response_data = json.loads(auth_resp.text)
+        if response_data['status'] != 0:
+            if "SecondaryAuthRequired".lower() in str(response_data.get('errorMessage', '')).lower():
+                secondaryauthurl = response_data['dialog']['okButtonAction']['url']
+                self.SecondaryAuth(secondaryauthurl)
+            raise Exception("Gift validation error: {}".format(response_data.get('errorMessage', '')))
+
         logger.info("Authenticate successully as '{}' with Dsid={}".format(self.username, ds_person_id))
 
         return response
+
+    def AnswerQuestion(self,question):
+        if "children" in question.lower():
+            return "Hassani"
+        if "parents" in question.lower():
+            return "Tehran"
+        if "sport" in question.lower():
+            return "Persepolis"
+        raise Exception("Question {} couldn't be answered!".format(question))
+
+    def SecondaryAuth(self,url):
+        response = self.session.get(url)
+        soup = Soup(response.text,"lxml")
+        form = soup.find('form')
+        action = urljoin(url,form.attrs['action'])
+        q1 = form.find("label",{"for":"answer1"}).get_text()
+        q2 = form.find("label",{"for":"answer2"}).get_text()
+
+        ans1 = self.AnswerQuestion(q1)
+        ans2 = self.AnswerQuestion(q2)
+
+        f1 = form.find("input",{"id":"answer1"}).attrs['name']
+        f2 = form.find("input",{"id":"answer2"}).attrs['name']
+
+        fcontinue = form.find("input",{"class":"continue"}).attrs['name']
+
+        response = self.session.post(action,data={f1:ans1,f2:ans2,fcontinue:"Continue"})
+
+
 
     @login_required
     def get_bag(self):
@@ -205,7 +248,8 @@ class AppStore:
 
 
 if __name__ == '__main__':
-    store = AppStore("user.appbuy@outlook.com", "Asp5Jx6z@", "bb7f7439219f126243b2c4e9efc8edb40438fec6")
+    store = AppStore("USERNAME", "PASSWORD")
+    
     
     store.authenticate()
-    store.gift_app("748048441", "ashkan.roshanayi@gmail.com", dry_run=True)
+    store.gift_app("ORDER_ID","388624839", "TARGET_USER_EMAIL", dry_run=False)

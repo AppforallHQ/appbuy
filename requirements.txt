@@ -14,3 +14,4 @@ raven==5.3.0
 redis==2.10.3
 requests==2.6.0
 tornado==4.1
+beautifulsoup4
