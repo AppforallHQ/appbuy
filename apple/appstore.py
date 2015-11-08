@@ -1,3 +1,4 @@
+import re
 import pdb
 import json
 import logging
@@ -35,8 +36,9 @@ class AppStore:
         GIFT_BUY_URL = "https://buy.itunes.apple.com/WebObjects/MZFinance.woa/wa/giftBuySrv"
         LOOKUP_URL = "https://itunes.apple.com/lookup?id={}"
 
-#    USER_AGENT = "AppStore/2.0 iOS/7.0.4 model/iPad3,1 (4; dt:77)"
+    USER_AGENT_DATA = "AppStore/2.0 iOS/7.0.4 model/iPad3,1 (4; dt:77)"
     USER_AGENT = "iTunes/10.6 (Windows; Microsoft Windows 7 x64 Ultimate Edition Service Pack 1 (Build 7601)) AppleWebKit/534.54.16 (myapp)"
+#    USER_AGENT_DATA = "iTunes/12.0.1 (Windows; Microsoft Windows 8 x64 Enterprise Edition (Build 9200)) AppleWebKit/7600.1017.0.24"
 
     def __init__(self, username, password, guid, action_signature=None):
         self.username = username
@@ -73,13 +75,13 @@ class AppStore:
             'guid': self.guid,
             'password': self.password,
 #            'rmp': '0',
-            'why': 'signin'
+            'why': 'signin',
         }
 
         headers = {
             'Content-Type': 'application/x-apple-plist',
             'X-Apple-Store-Front': '143441-1',#,20 t:native',
-#            'X-Apple-ActionSignature': self.action_signature,
+            'X-Apple-ActionSignature': "Ar4qkwEaIdLSBfnzBa0n++X3fK+6TkvjN1W1wgme+EyiAAAB0AMAAAACAAABAKvN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76vN76sAAAAWdGoUCDEBof/7dOVDHNVMWZHdbtHMAQAAAJ8Byk9Wv/bShVVWzXMaYqe2x08rYT0AAACGAgL88VamGtThB3BZs8caLSl2Vj8C3sdCoDO4490wYxBtuntc3iKVvlwGkcR3ORdoVvPgfo1/6auA/peyAxv9KkLrg2IhctR/EWhLERtdTwrvRiWmXam+4JU6Ly3obJNDPcf6I+fI3KAWBUlCcZm18DHP3rdG0XAtT2l0VfJg22DUFiWrW18AAAAAAAAAAAAAAQQCCB4A" # self.action_signature,
         }
 
         response = self.session.post(AppStore.Locations.AUTHENTICATION_URL, headers=headers,
@@ -94,15 +96,17 @@ class AppStore:
             raise Exception("Unable to authenticate.")
 
         auth_result = plistlib.loads(response.text.encode('utf-8'))
+        logger.info(auth_result)
         password_token = auth_result['passwordToken']
-        ds_person_id = auth_result['dsid']
+        ds_person_id = auth_result['dsPersonId']
 
 
         self.session.headers.update({
             'X-Token': password_token,
             'X-Dsid': ds_person_id,
             'X-Apple-Tz' : 28800,
-            'X-Apple-Cuid' : '7c1c1c990bcd9faec5493e21e6fd8d69',
+            'X-Apple-Guid': self.guid,
+            #'X-Apple-Cuid' : '7c1c1c990bcd9faec5493e21e6fd8d69',
         })
 
         self.is_authenticated = True
@@ -117,13 +121,14 @@ class AppStore:
 
     def get_app_data(self, app_id):
         response = requests.get(AppStore.Locations.LOOKUP_URL.format(app_id))
+        #logger.info(response.text)
         data = json.loads(response.text)
 
         if data['resultCount'] < 1:
             return None
 
         itunes_url = data['results'][0]['trackViewUrl']
-        response = self.session.get(itunes_url)
+        response = requests.get(itunes_url,headers={"User-Agent":self.USER_AGENT_DATA})
         return json.loads(response.text)
 
     def gift_app(self, order_id, app_id, to_email, dry_run=False):
@@ -143,7 +148,8 @@ class AppStore:
             'toEmail': to_email,
             'senderEmail': self.username,
             'fromName': 'PROJECT',
-            'dateSendType': 'today'
+            'dateSendType': 'today',
+            'kbsync': "AAQAA6wEVPpg3OJZBT9qghgBIAndCnpUs664Y6Q/Jzhg59lpzqxczU5aSkxn0Dg6EJpCbJAdbeqZY7YAhA1obBiAachDa9TsoKqeHdDa/sXMUItJJ5cSQ9bDOgF3YtyYlfX9owweCMQeqNXW9Jm+wn5aSXai86jzc1esHOmivRx2OhC4XIh6eQvvwlufY9Gy/Kbm3K3Nq3WjAruUy1zGxnU/ORzHfX4ceWegCc/yhmKxJTdlvcgqg6sh1Fw1EIjVP33Tug=="
         }
 
         response = self.session.post(AppStore.Locations.GIFT_VALIDATE_URL, headers={
